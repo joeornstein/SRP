@@ -6,8 +6,8 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(magrittr)
 
-## ----installation--------------------------------------------------------
-#devtools::install_github('SRP', username = 'jornstein')
+## ----installation, message = FALSE---------------------------------------
+devtools::install_github('joeornstein/SRP')
 library(SRP)
 
 ## ----data, message=FALSE-------------------------------------------------

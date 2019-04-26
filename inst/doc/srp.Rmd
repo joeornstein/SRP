@@ -29,8 +29,8 @@ Suppose we want to know how some public opinion varies by subnational unit. But 
 
 The `SRP` package is currently available on GitHub. You can install it using the `devtools` package.
 
-```{r installation}
-#devtools::install_github('SRP', username = 'jornstein')
+```{r installation, message = FALSE}
+devtools::install_github('joeornstein/SRP')
 library(SRP)
 ```
 
