@@ -1,0 +1,279 @@
+---
+title: "The SRP Package"
+author: "Joseph T. Ornstein"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The SRP Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: refs.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(magrittr)
+```
+
+SRP is an `R` package that contains useful functions for implementing multilevel regression and poststratification (MRP) and stacked regression and poststratification (SRP).
+
+## Motivation
+
+Suppose we want to know how some public opinion varies by subnational unit. But we don't have surveys that were conducted at the unit-level, only a national-level survey. How can we use the information from the national survey to make inferences about the subnational level? This vignette walks through three techniques for doing so: disaggregation, multilevel regression and poststratification (MRP), and stacked regression and poststratification (SRP). It concludes with an introduction to synthetic poststratification.
+
+## Installation
+
+The `SRP` package is currently available on GitHub. You can install it using the `devtools` package.
+
+```{r installation}
+#devtools::install_github('SRP', username = 'jornstein')
+library(SRP)
+```
+
+## The Data
+
+The dataset (`trainset`) contains individual-level data on public opinion and demographic characteristics. It is simulated data, generated from the Monte Carlo in @Ornstein2019. It contains the following variables:
+
+
+```{r data, message=FALSE}
+trainset <- SRP::vignetteData
+
+trainset
+```
+
+The variable $y$ is our outcome of interest, $x_1$ and $x_2$ are individual-level covariates, `unit` is the subnational unit ID, and `latitude`, `longitude`, and `unit_covariate` are characteristics of the subnational unit. 
+
+
+## Disaggregation
+
+Disaggregation is the most straightforward method to estimate. Simply take the unit-level means from the national survey. Note, however, that the number of observations within each unit is fairly small. As a result, disaggregation is unlikely to yield good estimates. This is why we adopt a model-based approach.
+
+```{r disag, message=FALSE}
+disag_estimates <- trainset %>% 
+  group_by(unit) %>% 
+  summarise(disag_estimate = mean(y),
+            num = n())
+
+disag_estimates
+```
+
+
+## MRP
+
+Multilevel regression and poststratification (MRP) was introduced by @Gelman1997 and refined by @Park2004. It proceeds in two steps:
+
+ 1. Estimate a multilevel regression, predicting opinion using observed individual-level and unit-level covariates.
+ 2. Poststratify by taking the mean of each group's prediction weighted by their frequency in the subnational unit.
+
+We can estimate the first-stage regression using the `lme4` package.
+
+```{r multilevel regression, message=FALSE}
+library(lme4)
+
+model1 <- lmer(y ~ (1|x1) + (1|x2) + unit_covariate + (1|unit), data = trainset)
+```
+
+For the second stage, we need a **poststratification frame**. For the `SRP` package, it should come in the following format.
+
+```{r PSFrame, message=FALSE}
+PSFrame <- SRP::vignettePSFrame
+
+PSFrame
+```
+
+Each row reports the empirical frequency for each unique combination of individual-level characteristics, repeated for each subnational unit. For example, the first row reports that there are 5482 individuals with $x_1 = 1$ and $x_2 = 1$ in Unit 1. 
+
+Once we have both pieces of information -- the predictions and the frequencies -- poststratification simply requires taking a weighted average, using the `poststratify` function. Note that this function requires your poststratification frame to have two particular variables:
+
+ * `unit`: the identity of the subnational unit.
+ * `freq`: the empirical frequency for each cell.
+
+```{r poststratification1, message=FALSE}
+pred <- predict(model1, PSFrame, allow.new.levels = T)
+
+mrp_estimates <- poststratify(pred, PSFrame)
+
+mrp_estimates
+```
+
+
+## SRP
+
+Stacked regression and poststratification (SRP) proceeds in the same fashion as MRP, but the first-stage predictions come from an ensemble model average generated through stacking. See @Ornstein2019 for technical details. 
+
+To start, we must tune and estimate each of the component models separately. The following code estimates a hierarchical linear regression model, LASSO, random forest, KNN, and gradient boosting. 
+
+```{r machine learning, message=FALSE}
+library(glmnet)
+library(ranger)
+library(kknn)
+library(xgboost)
+library(caret)
+
+
+#Estimate HLM
+hlmFormula <- y ~ (1|x1) +  (1|x2) + unit_covariate + (1|unit) 
+hlmModel <- lmer(hlmFormula, data = trainset)
+
+#Tune LASSO
+lasso_vars <- c("x1","x2","unit","unit_covariate")
+lasso_factors <- c('x1', 'x2', 'unit') #which variables to convert to factors
+trainset_lasso <- cleanDataLASSO(trainset, lasso_vars, lasso_factors)$trainset
+
+lassoModel <- cv.glmnet(trainset_lasso, trainset$y, 
+                        type.measure = "mse") 
+
+#Tune KNN
+knnFormula <- y ~ x1 + x2 + latitude + longitude + unit_covariate
+knn_train <- train.kknn(knnFormula, data=trainset, kmax = 201) #Find best k (LOOCV)
+k_best <- knn_train$best.parameters$k
+
+#Tune Random Forest
+forestFormula <- y ~ x1 + x2 + latitude + longitude + unit_covariate
+forestModel <- ranger(forestFormula, data = trainset)
+
+#Tune GBM
+gbm_vars <- c("x1","x2","latitude","longitude","unit_covariate")
+trainset_gbm <- cleanDataGBM(trainset=trainset, gbm_vars=gbm_vars)$trainset
+#Create a custom 'xgb.DMatrix'. Faster computation
+dtrain <- xgb.DMatrix(trainset_gbm, label = trainset$y)
+
+#5-fold cross-validation; pick nrounds that minimizes RMSE
+xgb.tune <- xgb.cv(data = dtrain, 
+                   booster = "gbtree",
+                   objective = "reg:linear",
+                   eval_metric = "rmse",
+                   eta = 0.02,
+                   nrounds = 50 / 0.02, #Lower eta -> more trees
+                   nfold = 5, 
+                   verbose = F,
+                   early_stopping_rounds = 20)
+
+gbmModel <- xgboost(data = dtrain, 
+                    booster = "gbtree",
+                    objective = "reg:linear",
+                    eval_metric = "rmse",
+                    eta = 0.02,
+                    verbose = F,
+                    nrounds = xgb.tune$best_iteration)
+```
+
+
+
+Next, we will use the `getStackWeights()` function to estimate the optimal ensemble model average weights using 5-fold cross-validation.
+
+```{r stacking, message=FALSE}
+stackWeights <- getStackWeights(trainset = trainset,
+                                hlmFormula = hlmFormula,
+                                lasso_vars = lasso_vars,
+                                lasso_factors = lasso_factors,
+                                forestFormula = forestFormula,
+                                knnFormula = knnFormula, k_best = k_best,
+                                gbm_vars = gbm_vars, gbm_factors = NULL, 
+                                gbm_params = list(eta = 0.02), gbm_tune = xgb.tune, 
+                                nfolds = 5)
+
+stackWeights %>% round(3)
+```
+
+Then we can poststratify as before.
+
+
+```{r poststratification2, message=FALSE}
+PSFrame_lasso <- cleanDataLASSO(PSFrame, lasso_vars = lasso_vars, lasso_factors = lasso_factors,
+                                new_vars_lasso = colnames(trainset_lasso))$trainset
+PSFrame_gbm <- cleanDataGBM(PSFrame, gbm_vars = gbm_vars)$trainset
+
+M1 <- predict(hlmModel, PSFrame, allow.new.levels = T)
+M2 <- predict(lassoModel, newx = PSFrame_lasso, s = lassoModel$lambda.min)
+M3 <- kknn(knnFormula, train = trainset, test = PSFrame, k = k_best)$fitted.values
+M4 <- predict(forestModel, PSFrame)$predictions
+M5 <- predict(gbmModel, PSFrame_gbm)
+M <- cbind(M1,M2,M3,M4,M5) %>% as.matrix
+
+pred <- M %*% stackWeights
+
+#Poststratify
+srp_estimates <- poststratify(pred, PSFrame)
+
+head(srp_estimates)
+```
+
+
+## Results
+
+Because the data came from a simulation, we also know the true unit-level means. Let's see how our estimates compare. 
+
+```{r plots, echo=FALSE, message=FALSE}
+true_means <- SRP::vignetteTruth
+
+mrp_estimates %<>% set_colnames(c('unit','mrp_estimate'))
+srp_estimates %<>% set_colnames(c('unit','srp_estimate'))
+
+results <- true_means %>%
+  left_join(disag_estimates, by = 'unit') %>%
+  left_join(mrp_estimates, by = 'unit') %>%
+  left_join(srp_estimates, by = 'unit')
+
+ggplot(results) + geom_point(aes(x=disag_estimate, y=true_mean)) + 
+  xlab('Disaggregated Estimate') + ylab('True Mean') + 
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw()
+
+ggplot(results) + geom_point(aes(x=mrp_estimate, y=true_mean)) + 
+  xlab('MRP Estimate') + ylab('True Mean') + 
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw()
+
+ggplot(results) + geom_point(aes(x=srp_estimate, y=true_mean)) + 
+  xlab('SRP Estimate') + ylab('True Mean') + 
+  geom_abline(intercept = 0, slope = 1) +
+  theme_bw()
+
+```
+
+## Synthetic Poststratification
+
+What if you do not have the joint frequency distribution for all your predictor variables at the subnational level? @Leemann2016 propose a method that instead uses marginal frequency distributions called **synthetic poststratification**. The approach proceeds by multiplying the marginal probabilities to create a *synethtic* joint distribution, assuming that the predictor variables are statistically independent. 
+
+Note that this is a strong assumption. However, if the first-stage model is additively-separable, then both classical and synthetic poststratification produce identical results (see Appendix A in @Ornstein2019 for the proof). This implies that Multilevel Regression and Synthetic Poststratification (MrsP) can produce *strictly* superior estimates when the first-stage model is linear-additive, because one can include more predictor variables. 
+
+The `SRP` package provides a function that can generate synthetic poststratification frames, called `getSyntheticPSFrame()`. 
+
+### Using the Function
+
+Suppose you have two (non-synthetic) frequency distributions describing the same population.
+
+```{r PSFrames, echo=TRUE, message=FALSE}
+PSFrame1 <- SRP::race
+PSFrame2 <- SRP::education
+
+PSFrame1
+PSFrame2
+```
+
+To get the synthetic joint distribution, just call `getSyntheticPSFrame()`. Note that the resulting output is consistent with the marginal frequency distributions; add up all the observations with race == 1 in and it should yield the same frequency from `PSFrame1`.
+
+```{r getSynthetic, echo=TRUE, message=FALSE}
+PSFrame <- getSyntheticPSFrame(PSFrame1, PSFrame2)
+
+PSFrame
+```
+
+If you want to generate a synthetic poststratification frame from more than one marginal distribution, simply repeat the process.
+
+```{r getSynthetic2, echo=TRUE, message=FALSE}
+PSFrame3 <- SRP::sex
+
+PSFrame3
+
+PSFrame <- getSyntheticPSFrame(PSFrame, PSFrame3)
+
+PSFrame
+```
+
+## References
