@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Joseph T. Ornstein" />
+
+<meta name="date" content="2019-05-08" />
+
+<title>The SRP Package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">The SRP Package</h1>
+<h4 class="author">Joseph T. Ornstein</h4>
+<h4 class="date">2019-05-08</h4>
+
+
+
+<p>SRP is an <code>R</code> package that contains useful functions for implementing multilevel regression and poststratification (MRP) and stacked regression and poststratification (SRP).</p>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>Suppose we want to know how some public opinion varies by subnational unit. But we don’t have surveys that were conducted at the unit-level, only a national-level survey. How can we use the information from the national survey to make inferences about the subnational level? This vignette walks through three techniques for doing so: disaggregation, multilevel regression and poststratification (MRP), and stacked regression and poststratification (SRP). It concludes with an introduction to synthetic poststratification.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>The <code>SRP</code> package is currently available on GitHub. You can install it using the <code>devtools</code> package.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co">#devtools::install_github(&#39;joeornstein/SRP&#39;)</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(SRP)</a></code></pre></div>
+</div>
+<div id="the-data" class="section level2">
+<h2>The Data</h2>
+<p>The dataset (<code>trainset</code>) contains individual-level data on public opinion and demographic characteristics. It is simulated data, generated from the Monte Carlo in <span class="citation">Ornstein (2019)</span>. It contains the following variables:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">trainset &lt;-<span class="st"> </span>SRP<span class="op">::</span>vignetteData</a>
+<a class="sourceLine" id="cb2-2" title="2"></a>
+<a class="sourceLine" id="cb2-3" title="3">trainset</a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co">#&gt; # A tibble: 3,000 x 8</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="co">#&gt;         ID      y    x1    x2  unit latitude longitude unit_covariate</span></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co">#&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co">#&gt;  1  638233 -2.68      2     1    43    0.663    0.140            2.22</span></a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="co">#&gt;  2 1909280  2.01      3     3   128    0.987    0.504            2.64</span></a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="co">#&gt;  3 2513825 -4.36      1     2   168    0.752    0.746            2.84</span></a>
+<a class="sourceLine" id="cb2-10" title="10"><span class="co">#&gt;  4 2968824 -0.989     2     3   198    0.764    0.190            3.27</span></a>
+<a class="sourceLine" id="cb2-11" title="11"><span class="co">#&gt;  5  258017  4.18      1     1    18    0.545    0.897            2.00</span></a>
+<a class="sourceLine" id="cb2-12" title="12"><span class="co">#&gt;  6 1252503 -4.54      3     3    84    0.770    0.195            2.43</span></a>
+<a class="sourceLine" id="cb2-13" title="13"><span class="co">#&gt;  7 1414783 -3.63      2     2    95    0.518    0.0937           2.47</span></a>
+<a class="sourceLine" id="cb2-14" title="14"><span class="co">#&gt;  8  602889  3.56      3     3    41    0.162    0.559            2.20</span></a>
+<a class="sourceLine" id="cb2-15" title="15"><span class="co">#&gt;  9  157609  0.271     2     2    11    0.431    0.554            1.93</span></a>
+<a class="sourceLine" id="cb2-16" title="16"><span class="co">#&gt; 10 2610832  5.99      4     4   175    0.898    0.932            2.91</span></a>
+<a class="sourceLine" id="cb2-17" title="17"><span class="co">#&gt; # ... with 2,990 more rows</span></a></code></pre></div>
+<p>The variable <span class="math inline">\(y\)</span> is our outcome of interest, <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> are individual-level covariates, <code>unit</code> is the subnational unit ID, and <code>latitude</code>, <code>longitude</code>, and <code>unit_covariate</code> are characteristics of the subnational unit.</p>
+</div>
+<div id="disaggregation" class="section level2">
+<h2>Disaggregation</h2>
+<p>Disaggregation is the most straightforward method to estimate. Simply take the unit-level means from the national survey. Note, however, that the number of observations within each unit is fairly small. As a result, disaggregation is unlikely to yield good estimates. This is why we adopt a model-based approach.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">disag_estimates &lt;-<span class="st"> </span>trainset <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="st">  </span><span class="kw">group_by</span>(unit) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">disag_estimate =</span> <span class="kw">mean</span>(y),</a>
+<a class="sourceLine" id="cb3-4" title="4">            <span class="dt">num =</span> <span class="kw">n</span>())</a>
+<a class="sourceLine" id="cb3-5" title="5"></a>
+<a class="sourceLine" id="cb3-6" title="6">disag_estimates</a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="co">#&gt; # A tibble: 200 x 3</span></a>
+<a class="sourceLine" id="cb3-8" title="8"><span class="co">#&gt;     unit disag_estimate   num</span></a>
+<a class="sourceLine" id="cb3-9" title="9"><span class="co">#&gt;    &lt;int&gt;          &lt;dbl&gt; &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb3-10" title="10"><span class="co">#&gt;  1     1          -6.15    14</span></a>
+<a class="sourceLine" id="cb3-11" title="11"><span class="co">#&gt;  2     2           2.61    14</span></a>
+<a class="sourceLine" id="cb3-12" title="12"><span class="co">#&gt;  3     3          -4.10    16</span></a>
+<a class="sourceLine" id="cb3-13" title="13"><span class="co">#&gt;  4     4          -3.45    15</span></a>
+<a class="sourceLine" id="cb3-14" title="14"><span class="co">#&gt;  5     5          -3.63    10</span></a>
+<a class="sourceLine" id="cb3-15" title="15"><span class="co">#&gt;  6     6          -5.40    21</span></a>
+<a class="sourceLine" id="cb3-16" title="16"><span class="co">#&gt;  7     7          -2.74    15</span></a>
+<a class="sourceLine" id="cb3-17" title="17"><span class="co">#&gt;  8     8          -2.95    18</span></a>
+<a class="sourceLine" id="cb3-18" title="18"><span class="co">#&gt;  9     9          -1.61    15</span></a>
+<a class="sourceLine" id="cb3-19" title="19"><span class="co">#&gt; 10    10          -1.48    16</span></a>
+<a class="sourceLine" id="cb3-20" title="20"><span class="co">#&gt; # ... with 190 more rows</span></a></code></pre></div>
+</div>
+<div id="mrp" class="section level2">
+<h2>MRP</h2>
+<p>Multilevel regression and poststratification (MRP) was introduced by <span class="citation">Gelman and Little (1997)</span> and refined by <span class="citation">Park, Gelman, and Bafumi (2004)</span>. It proceeds in two steps:</p>
+<ol style="list-style-type: decimal">
+<li>Estimate a multilevel regression, predicting opinion using observed individual-level and unit-level covariates.</li>
+<li>Poststratify by taking the mean of each group’s prediction weighted by their frequency in the subnational unit.</li>
+</ol>
+<p>We can estimate the first-stage regression using the <code>lme4</code> package.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="kw">library</span>(lme4)</a>
+<a class="sourceLine" id="cb4-2" title="2"></a>
+<a class="sourceLine" id="cb4-3" title="3">model1 &lt;-<span class="st"> </span><span class="kw">lmer</span>(y <span class="op">~</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>x1) <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>x2) <span class="op">+</span><span class="st"> </span>unit_covariate <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>unit), <span class="dt">data =</span> trainset)</a></code></pre></div>
+<p>For the second stage, we need a <strong>poststratification frame</strong>. For the <code>SRP</code> package, it should come in the following format.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">PSFrame &lt;-<span class="st"> </span>SRP<span class="op">::</span>vignettePSFrame</a>
+<a class="sourceLine" id="cb5-2" title="2"></a>
+<a class="sourceLine" id="cb5-3" title="3">PSFrame</a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="co">#&gt; # A tibble: 3,200 x 7</span></a>
+<a class="sourceLine" id="cb5-5" title="5"><span class="co">#&gt;     unit    x1    x2  freq unit_covariate latitude longitude</span></a>
+<a class="sourceLine" id="cb5-6" title="6"><span class="co">#&gt;    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;          &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb5-7" title="7"><span class="co">#&gt;  1     1     1     1  5482           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-8" title="8"><span class="co">#&gt;  2     1     1     2  2497           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-9" title="9"><span class="co">#&gt;  3     1     1     3   499           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-10" title="10"><span class="co">#&gt;  4     1     1     4    43           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-11" title="11"><span class="co">#&gt;  5     1     2     1  2418           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-12" title="12"><span class="co">#&gt;  6     1     2     2  1817           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-13" title="13"><span class="co">#&gt;  7     1     2     3   603           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-14" title="14"><span class="co">#&gt;  8     1     2     4    58           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-15" title="15"><span class="co">#&gt;  9     1     3     1   557           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-16" title="16"><span class="co">#&gt; 10     1     3     2   590           1.54    0.623    0.0647</span></a>
+<a class="sourceLine" id="cb5-17" title="17"><span class="co">#&gt; # ... with 3,190 more rows</span></a></code></pre></div>
+<p>Each row reports the empirical frequency for each unique combination of individual-level characteristics, repeated for each subnational unit. For example, the first row reports that there are 5482 individuals with <span class="math inline">\(x_1 = 1\)</span> and <span class="math inline">\(x_2 = 1\)</span> in Unit 1.</p>
+<p>Once we have both pieces of information – the predictions and the frequencies – poststratification simply requires taking a weighted average, using the <code>poststratify</code> function. Note that this function requires your poststratification frame to have two particular variables:</p>
+<ul>
+<li><code>unit</code>: the identity of the subnational unit.</li>
+<li><code>freq</code>: the empirical frequency for each cell.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">pred &lt;-<span class="st"> </span><span class="kw">predict</span>(model1, PSFrame, <span class="dt">allow.new.levels =</span> T)</a>
+<a class="sourceLine" id="cb6-2" title="2"></a>
+<a class="sourceLine" id="cb6-3" title="3">mrp_estimates &lt;-<span class="st"> </span><span class="kw">poststratify</span>(pred, PSFrame)</a>
+<a class="sourceLine" id="cb6-4" title="4"></a>
+<a class="sourceLine" id="cb6-5" title="5">mrp_estimates</a>
+<a class="sourceLine" id="cb6-6" title="6"><span class="co">#&gt; # A tibble: 200 x 2</span></a>
+<a class="sourceLine" id="cb6-7" title="7"><span class="co">#&gt;     unit poststratifiedEstimate</span></a>
+<a class="sourceLine" id="cb6-8" title="8"><span class="co">#&gt;    &lt;int&gt;                  &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb6-9" title="9"><span class="co">#&gt;  1     1                  -3.54</span></a>
+<a class="sourceLine" id="cb6-10" title="10"><span class="co">#&gt;  2     2                  -1.38</span></a>
+<a class="sourceLine" id="cb6-11" title="11"><span class="co">#&gt;  3     3                  -2.72</span></a>
+<a class="sourceLine" id="cb6-12" title="12"><span class="co">#&gt;  4     4                  -2.49</span></a>
+<a class="sourceLine" id="cb6-13" title="13"><span class="co">#&gt;  5     5                  -2.39</span></a>
+<a class="sourceLine" id="cb6-14" title="14"><span class="co">#&gt;  6     6                  -2.96</span></a>
+<a class="sourceLine" id="cb6-15" title="15"><span class="co">#&gt;  7     7                  -2.06</span></a>
+<a class="sourceLine" id="cb6-16" title="16"><span class="co">#&gt;  8     8                  -2.27</span></a>
+<a class="sourceLine" id="cb6-17" title="17"><span class="co">#&gt;  9     9                  -1.76</span></a>
+<a class="sourceLine" id="cb6-18" title="18"><span class="co">#&gt; 10    10                  -1.66</span></a>
+<a class="sourceLine" id="cb6-19" title="19"><span class="co">#&gt; # ... with 190 more rows</span></a></code></pre></div>
+</div>
+<div id="srp" class="section level2">
+<h2>SRP</h2>
+<p>Stacked regression and poststratification (SRP) proceeds in the same fashion as MRP, but the first-stage predictions come from an ensemble model average generated through stacking. See <span class="citation">Ornstein (2019)</span> for technical details.</p>
+<p>To start, we must tune and estimate each of the component models separately. The following code estimates a hierarchical linear regression model, LASSO, random forest, KNN, and gradient boosting.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">library</span>(glmnet)</a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="kw">library</span>(ranger)</a>
+<a class="sourceLine" id="cb7-3" title="3"><span class="kw">library</span>(kknn)</a>
+<a class="sourceLine" id="cb7-4" title="4"><span class="kw">library</span>(xgboost)</a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="kw">library</span>(caret)</a>
+<a class="sourceLine" id="cb7-6" title="6"></a>
+<a class="sourceLine" id="cb7-7" title="7"></a>
+<a class="sourceLine" id="cb7-8" title="8"><span class="co">#Estimate HLM</span></a>
+<a class="sourceLine" id="cb7-9" title="9">hlmFormula &lt;-<span class="st"> </span>y <span class="op">~</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>x1) <span class="op">+</span><span class="st">  </span>(<span class="dv">1</span><span class="op">|</span>x2) <span class="op">+</span><span class="st"> </span>unit_covariate <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>unit) </a>
+<a class="sourceLine" id="cb7-10" title="10">hlmModel &lt;-<span class="st"> </span><span class="kw">lmer</span>(hlmFormula, <span class="dt">data =</span> trainset)</a>
+<a class="sourceLine" id="cb7-11" title="11"></a>
+<a class="sourceLine" id="cb7-12" title="12"><span class="co">#Tune LASSO</span></a>
+<a class="sourceLine" id="cb7-13" title="13">lasso_vars &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;unit&quot;</span>,<span class="st">&quot;unit_covariate&quot;</span>)</a>
+<a class="sourceLine" id="cb7-14" title="14">lasso_factors &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;x1&#39;</span>, <span class="st">&#39;x2&#39;</span>, <span class="st">&#39;unit&#39;</span>) <span class="co">#which variables to convert to factors</span></a>
+<a class="sourceLine" id="cb7-15" title="15">trainset_lasso &lt;-<span class="st"> </span><span class="kw">cleanDataLASSO</span>(trainset, lasso_vars, lasso_factors)<span class="op">$</span>trainset</a>
+<a class="sourceLine" id="cb7-16" title="16"></a>
+<a class="sourceLine" id="cb7-17" title="17">lassoModel &lt;-<span class="st"> </span><span class="kw">cv.glmnet</span>(trainset_lasso, trainset<span class="op">$</span>y, </a>
+<a class="sourceLine" id="cb7-18" title="18">                        <span class="dt">type.measure =</span> <span class="st">&quot;mse&quot;</span>) </a>
+<a class="sourceLine" id="cb7-19" title="19"></a>
+<a class="sourceLine" id="cb7-20" title="20"><span class="co">#Tune KNN</span></a>
+<a class="sourceLine" id="cb7-21" title="21">knnFormula &lt;-<span class="st"> </span>y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2 <span class="op">+</span><span class="st"> </span>latitude <span class="op">+</span><span class="st"> </span>longitude <span class="op">+</span><span class="st"> </span>unit_covariate</a>
+<a class="sourceLine" id="cb7-22" title="22">knn_train &lt;-<span class="st"> </span><span class="kw">train.kknn</span>(knnFormula, <span class="dt">data=</span>trainset, <span class="dt">kmax =</span> <span class="dv">201</span>) <span class="co">#Find best k (LOOCV)</span></a>
+<a class="sourceLine" id="cb7-23" title="23">k_best &lt;-<span class="st"> </span>knn_train<span class="op">$</span>best.parameters<span class="op">$</span>k</a>
+<a class="sourceLine" id="cb7-24" title="24"></a>
+<a class="sourceLine" id="cb7-25" title="25"><span class="co">#Tune Random Forest</span></a>
+<a class="sourceLine" id="cb7-26" title="26">forestFormula &lt;-<span class="st"> </span>y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2 <span class="op">+</span><span class="st"> </span>latitude <span class="op">+</span><span class="st"> </span>longitude <span class="op">+</span><span class="st"> </span>unit_covariate</a>
+<a class="sourceLine" id="cb7-27" title="27">forestModel &lt;-<span class="st"> </span><span class="kw">ranger</span>(forestFormula, <span class="dt">data =</span> trainset)</a>
+<a class="sourceLine" id="cb7-28" title="28"></a>
+<a class="sourceLine" id="cb7-29" title="29"><span class="co">#Tune GBM</span></a>
+<a class="sourceLine" id="cb7-30" title="30">gbm_vars &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;x1&quot;</span>,<span class="st">&quot;x2&quot;</span>,<span class="st">&quot;latitude&quot;</span>,<span class="st">&quot;longitude&quot;</span>,<span class="st">&quot;unit_covariate&quot;</span>)</a>
+<a class="sourceLine" id="cb7-31" title="31">trainset_gbm &lt;-<span class="st"> </span><span class="kw">cleanDataGBM</span>(<span class="dt">trainset=</span>trainset, <span class="dt">gbm_vars=</span>gbm_vars)<span class="op">$</span>trainset</a>
+<a class="sourceLine" id="cb7-32" title="32"><span class="co">#Create a custom &#39;xgb.DMatrix&#39;. Faster computation</span></a>
+<a class="sourceLine" id="cb7-33" title="33">dtrain &lt;-<span class="st"> </span><span class="kw">xgb.DMatrix</span>(trainset_gbm, <span class="dt">label =</span> trainset<span class="op">$</span>y)</a>
+<a class="sourceLine" id="cb7-34" title="34"></a>
+<a class="sourceLine" id="cb7-35" title="35"><span class="co">#5-fold cross-validation; pick nrounds that minimizes RMSE</span></a>
+<a class="sourceLine" id="cb7-36" title="36">xgb.tune &lt;-<span class="st"> </span><span class="kw">xgb.cv</span>(<span class="dt">data =</span> dtrain, </a>
+<a class="sourceLine" id="cb7-37" title="37">                   <span class="dt">booster =</span> <span class="st">&quot;gbtree&quot;</span>,</a>
+<a class="sourceLine" id="cb7-38" title="38">                   <span class="dt">objective =</span> <span class="st">&quot;reg:linear&quot;</span>,</a>
+<a class="sourceLine" id="cb7-39" title="39">                   <span class="dt">eval_metric =</span> <span class="st">&quot;rmse&quot;</span>,</a>
+<a class="sourceLine" id="cb7-40" title="40">                   <span class="dt">eta =</span> <span class="fl">0.02</span>,</a>
+<a class="sourceLine" id="cb7-41" title="41">                   <span class="dt">nrounds =</span> <span class="dv">50</span> <span class="op">/</span><span class="st"> </span><span class="fl">0.02</span>, <span class="co">#Lower eta -&gt; more trees</span></a>
+<a class="sourceLine" id="cb7-42" title="42">                   <span class="dt">nfold =</span> <span class="dv">5</span>, </a>
+<a class="sourceLine" id="cb7-43" title="43">                   <span class="dt">verbose =</span> F,</a>
+<a class="sourceLine" id="cb7-44" title="44">                   <span class="dt">early_stopping_rounds =</span> <span class="dv">20</span>)</a>
+<a class="sourceLine" id="cb7-45" title="45"></a>
+<a class="sourceLine" id="cb7-46" title="46">gbmModel &lt;-<span class="st"> </span><span class="kw">xgboost</span>(<span class="dt">data =</span> dtrain, </a>
+<a class="sourceLine" id="cb7-47" title="47">                    <span class="dt">booster =</span> <span class="st">&quot;gbtree&quot;</span>,</a>
+<a class="sourceLine" id="cb7-48" title="48">                    <span class="dt">objective =</span> <span class="st">&quot;reg:linear&quot;</span>,</a>
+<a class="sourceLine" id="cb7-49" title="49">                    <span class="dt">eval_metric =</span> <span class="st">&quot;rmse&quot;</span>,</a>
+<a class="sourceLine" id="cb7-50" title="50">                    <span class="dt">eta =</span> <span class="fl">0.02</span>,</a>
+<a class="sourceLine" id="cb7-51" title="51">                    <span class="dt">verbose =</span> F,</a>
+<a class="sourceLine" id="cb7-52" title="52">                    <span class="dt">nrounds =</span> xgb.tune<span class="op">$</span>best_iteration)</a></code></pre></div>
+<p>Next, we will use the <code>getStackWeights()</code> function to estimate the optimal ensemble model average weights using 5-fold cross-validation.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">stackWeights &lt;-<span class="st"> </span><span class="kw">getStackWeights</span>(<span class="dt">trainset =</span> trainset,</a>
+<a class="sourceLine" id="cb8-2" title="2">                                <span class="dt">hlmFormula =</span> hlmFormula,</a>
+<a class="sourceLine" id="cb8-3" title="3">                                <span class="dt">lasso_vars =</span> lasso_vars,</a>
+<a class="sourceLine" id="cb8-4" title="4">                                <span class="dt">lasso_factors =</span> lasso_factors,</a>
+<a class="sourceLine" id="cb8-5" title="5">                                <span class="dt">forestFormula =</span> forestFormula,</a>
+<a class="sourceLine" id="cb8-6" title="6">                                <span class="dt">knnFormula =</span> knnFormula, <span class="dt">k_best =</span> k_best,</a>
+<a class="sourceLine" id="cb8-7" title="7">                                <span class="dt">gbm_vars =</span> gbm_vars, <span class="dt">gbm_factors =</span> <span class="ot">NULL</span>, </a>
+<a class="sourceLine" id="cb8-8" title="8">                                <span class="dt">gbm_params =</span> <span class="kw">list</span>(<span class="dt">eta =</span> <span class="fl">0.02</span>), <span class="dt">gbm_tune =</span> xgb.tune, </a>
+<a class="sourceLine" id="cb8-9" title="9">                                <span class="dt">nfolds =</span> <span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb8-10" title="10"></a>
+<a class="sourceLine" id="cb8-11" title="11">stackWeights <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">round</span>(<span class="dv">3</span>)</a>
+<a class="sourceLine" id="cb8-12" title="12"><span class="co">#&gt; [1] 0.284 0.000 0.127 0.000 0.589</span></a></code></pre></div>
+<p>Then we can poststratify as before.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">PSFrame_lasso &lt;-<span class="st"> </span><span class="kw">cleanDataLASSO</span>(PSFrame, <span class="dt">lasso_vars =</span> lasso_vars, <span class="dt">lasso_factors =</span> lasso_factors,</a>
+<a class="sourceLine" id="cb9-2" title="2">                                <span class="dt">new_vars_lasso =</span> <span class="kw">colnames</span>(trainset_lasso))<span class="op">$</span>trainset</a>
+<a class="sourceLine" id="cb9-3" title="3">PSFrame_gbm &lt;-<span class="st"> </span><span class="kw">cleanDataGBM</span>(PSFrame, <span class="dt">gbm_vars =</span> gbm_vars)<span class="op">$</span>trainset</a>
+<a class="sourceLine" id="cb9-4" title="4"></a>
+<a class="sourceLine" id="cb9-5" title="5">M1 &lt;-<span class="st"> </span><span class="kw">predict</span>(hlmModel, PSFrame, <span class="dt">allow.new.levels =</span> T)</a>
+<a class="sourceLine" id="cb9-6" title="6">M2 &lt;-<span class="st"> </span><span class="kw">predict</span>(lassoModel, <span class="dt">newx =</span> PSFrame_lasso, <span class="dt">s =</span> lassoModel<span class="op">$</span>lambda.min)</a>
+<a class="sourceLine" id="cb9-7" title="7">M3 &lt;-<span class="st"> </span><span class="kw">kknn</span>(knnFormula, <span class="dt">train =</span> trainset, <span class="dt">test =</span> PSFrame, <span class="dt">k =</span> k_best)<span class="op">$</span>fitted.values</a>
+<a class="sourceLine" id="cb9-8" title="8">M4 &lt;-<span class="st"> </span><span class="kw">predict</span>(forestModel, PSFrame)<span class="op">$</span>predictions</a>
+<a class="sourceLine" id="cb9-9" title="9">M5 &lt;-<span class="st"> </span><span class="kw">predict</span>(gbmModel, PSFrame_gbm)</a>
+<a class="sourceLine" id="cb9-10" title="10">M &lt;-<span class="st"> </span><span class="kw">cbind</span>(M1,M2,M3,M4,M5) <span class="op">%&gt;%</span><span class="st"> </span>as.matrix</a>
+<a class="sourceLine" id="cb9-11" title="11"></a>
+<a class="sourceLine" id="cb9-12" title="12">pred &lt;-<span class="st"> </span>M <span class="op">%*%</span><span class="st"> </span>stackWeights</a>
+<a class="sourceLine" id="cb9-13" title="13"></a>
+<a class="sourceLine" id="cb9-14" title="14"><span class="co">#Poststratify</span></a>
+<a class="sourceLine" id="cb9-15" title="15">srp_estimates &lt;-<span class="st"> </span><span class="kw">poststratify</span>(pred, PSFrame)</a>
+<a class="sourceLine" id="cb9-16" title="16"></a>
+<a class="sourceLine" id="cb9-17" title="17"><span class="kw">head</span>(srp_estimates)</a>
+<a class="sourceLine" id="cb9-18" title="18"><span class="co">#&gt; # A tibble: 6 x 2</span></a>
+<a class="sourceLine" id="cb9-19" title="19"><span class="co">#&gt;    unit poststratifiedEstimate</span></a>
+<a class="sourceLine" id="cb9-20" title="20"><span class="co">#&gt;   &lt;int&gt;                  &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb9-21" title="21"><span class="co">#&gt; 1     1                -0.0365</span></a>
+<a class="sourceLine" id="cb9-22" title="22"><span class="co">#&gt; 2     2                 0.903 </span></a>
+<a class="sourceLine" id="cb9-23" title="23"><span class="co">#&gt; 3     3                -3.16  </span></a>
+<a class="sourceLine" id="cb9-24" title="24"><span class="co">#&gt; 4     4                -2.97  </span></a>
+<a class="sourceLine" id="cb9-25" title="25"><span class="co">#&gt; 5     5                 0.386 </span></a>
+<a class="sourceLine" id="cb9-26" title="26"><span class="co">#&gt; 6     6                -2.05</span></a></code></pre></div>
+</div>
+<div id="results" class="section level2">
+<h2>Results</h2>
+<p>Because the data came from a simulation, we also know the true unit-level means. Let’s see how our estimates compare.</p>
+<p><img src="data:image/png;base64,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" /><!-- --><img src="data:image/png;base64,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" /><!-- --><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="synthetic-poststratification" class="section level2">
+<h2>Synthetic Poststratification</h2>
+<p>What if you do not have the joint frequency distribution for all your predictor variables at the subnational level? <span class="citation">Leemann and Wasserfallen (2017)</span> propose a method that instead uses marginal frequency distributions called <strong>synthetic poststratification</strong>. The approach proceeds by multiplying the marginal probabilities to create a <em>synethtic</em> joint distribution, assuming that the predictor variables are statistically independent.</p>
+<p>Note that this is a strong assumption. However, if the first-stage model is additively-separable, then both classical and synthetic poststratification produce identical results (see Appendix A in <span class="citation">Ornstein (2019)</span> for the proof). This implies that Multilevel Regression and Synthetic Poststratification (MrsP) can produce <em>strictly</em> superior estimates when the first-stage model is linear-additive, because one can include more predictor variables.</p>
+<p>The <code>SRP</code> package provides a function that can generate synthetic poststratification frames, called <code>getSyntheticPSFrame()</code>.</p>
+<div id="using-the-function" class="section level3">
+<h3>Using the Function</h3>
+<p>Suppose you have two (non-synthetic) frequency distributions describing the same population.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">PSFrame1 &lt;-<span class="st"> </span>SRP<span class="op">::</span>race</a>
+<a class="sourceLine" id="cb10-2" title="2">PSFrame2 &lt;-<span class="st"> </span>SRP<span class="op">::</span>education</a>
+<a class="sourceLine" id="cb10-3" title="3"></a>
+<a class="sourceLine" id="cb10-4" title="4">PSFrame1</a>
+<a class="sourceLine" id="cb10-5" title="5"><span class="co">#&gt; # A tibble: 8 x 3</span></a>
+<a class="sourceLine" id="cb10-6" title="6"><span class="co">#&gt;    unit  race  freq</span></a>
+<a class="sourceLine" id="cb10-7" title="7"><span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb10-8" title="8"><span class="co">#&gt; 1     1     1   100</span></a>
+<a class="sourceLine" id="cb10-9" title="9"><span class="co">#&gt; 2     1     2   200</span></a>
+<a class="sourceLine" id="cb10-10" title="10"><span class="co">#&gt; 3     1     3   300</span></a>
+<a class="sourceLine" id="cb10-11" title="11"><span class="co">#&gt; 4     1     4   400</span></a>
+<a class="sourceLine" id="cb10-12" title="12"><span class="co">#&gt; 5     2     1   200</span></a>
+<a class="sourceLine" id="cb10-13" title="13"><span class="co">#&gt; 6     2     2   100</span></a>
+<a class="sourceLine" id="cb10-14" title="14"><span class="co">#&gt; 7     2     3   300</span></a>
+<a class="sourceLine" id="cb10-15" title="15"><span class="co">#&gt; 8     2     4   400</span></a>
+<a class="sourceLine" id="cb10-16" title="16">PSFrame2</a>
+<a class="sourceLine" id="cb10-17" title="17"><span class="co">#&gt; # A tibble: 6 x 3</span></a>
+<a class="sourceLine" id="cb10-18" title="18"><span class="co">#&gt;    unit education  freq</span></a>
+<a class="sourceLine" id="cb10-19" title="19"><span class="co">#&gt;   &lt;int&gt;     &lt;int&gt; &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb10-20" title="20"><span class="co">#&gt; 1     1         1   250</span></a>
+<a class="sourceLine" id="cb10-21" title="21"><span class="co">#&gt; 2     1         2   300</span></a>
+<a class="sourceLine" id="cb10-22" title="22"><span class="co">#&gt; 3     1         3   450</span></a>
+<a class="sourceLine" id="cb10-23" title="23"><span class="co">#&gt; 4     2         1   450</span></a>
+<a class="sourceLine" id="cb10-24" title="24"><span class="co">#&gt; 5     2         2   350</span></a>
+<a class="sourceLine" id="cb10-25" title="25"><span class="co">#&gt; 6     2         3   200</span></a></code></pre></div>
+<p>To get the synthetic joint distribution, just call <code>getSyntheticPSFrame()</code>. Note that the resulting output is consistent with the marginal frequency distributions; add up all the observations with race == 1 in and it should yield the same frequency from <code>PSFrame1</code>.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">PSFrame &lt;-<span class="st"> </span><span class="kw">getSyntheticPSFrame</span>(PSFrame1, PSFrame2)</a>
+<a class="sourceLine" id="cb11-2" title="2"></a>
+<a class="sourceLine" id="cb11-3" title="3">PSFrame</a>
+<a class="sourceLine" id="cb11-4" title="4"><span class="co">#&gt; # A tibble: 24 x 4</span></a>
+<a class="sourceLine" id="cb11-5" title="5"><span class="co">#&gt;     unit  race education  freq</span></a>
+<a class="sourceLine" id="cb11-6" title="6"><span class="co">#&gt;    &lt;int&gt; &lt;int&gt;     &lt;int&gt; &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb11-7" title="7"><span class="co">#&gt;  1     1     1         1   25 </span></a>
+<a class="sourceLine" id="cb11-8" title="8"><span class="co">#&gt;  2     1     1         2   30 </span></a>
+<a class="sourceLine" id="cb11-9" title="9"><span class="co">#&gt;  3     1     1         3   45.</span></a>
+<a class="sourceLine" id="cb11-10" title="10"><span class="co">#&gt;  4     1     2         1   50 </span></a>
+<a class="sourceLine" id="cb11-11" title="11"><span class="co">#&gt;  5     1     2         2   60 </span></a>
+<a class="sourceLine" id="cb11-12" title="12"><span class="co">#&gt;  6     1     2         3   90.</span></a>
+<a class="sourceLine" id="cb11-13" title="13"><span class="co">#&gt;  7     1     3         1   75 </span></a>
+<a class="sourceLine" id="cb11-14" title="14"><span class="co">#&gt;  8     1     3         2   90 </span></a>
+<a class="sourceLine" id="cb11-15" title="15"><span class="co">#&gt;  9     1     3         3  135 </span></a>
+<a class="sourceLine" id="cb11-16" title="16"><span class="co">#&gt; 10     1     4         1  100 </span></a>
+<a class="sourceLine" id="cb11-17" title="17"><span class="co">#&gt; # ... with 14 more rows</span></a></code></pre></div>
+<p>If you want to generate a synthetic poststratification frame from more than one marginal distribution, simply repeat the process.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">PSFrame3 &lt;-<span class="st"> </span>SRP<span class="op">::</span>sex</a>
+<a class="sourceLine" id="cb12-2" title="2"></a>
+<a class="sourceLine" id="cb12-3" title="3">PSFrame3</a>
+<a class="sourceLine" id="cb12-4" title="4"><span class="co">#&gt; # A tibble: 4 x 3</span></a>
+<a class="sourceLine" id="cb12-5" title="5"><span class="co">#&gt;    unit   sex  freq</span></a>
+<a class="sourceLine" id="cb12-6" title="6"><span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb12-7" title="7"><span class="co">#&gt; 1     1     1   600</span></a>
+<a class="sourceLine" id="cb12-8" title="8"><span class="co">#&gt; 2     1     2   400</span></a>
+<a class="sourceLine" id="cb12-9" title="9"><span class="co">#&gt; 3     2     1   500</span></a>
+<a class="sourceLine" id="cb12-10" title="10"><span class="co">#&gt; 4     2     2   500</span></a>
+<a class="sourceLine" id="cb12-11" title="11"></a>
+<a class="sourceLine" id="cb12-12" title="12">PSFrame &lt;-<span class="st"> </span><span class="kw">getSyntheticPSFrame</span>(PSFrame, PSFrame3)</a>
+<a class="sourceLine" id="cb12-13" title="13"></a>
+<a class="sourceLine" id="cb12-14" title="14">PSFrame</a>
+<a class="sourceLine" id="cb12-15" title="15"><span class="co">#&gt; # A tibble: 48 x 5</span></a>
+<a class="sourceLine" id="cb12-16" title="16"><span class="co">#&gt;     unit  race education   sex  freq</span></a>
+<a class="sourceLine" id="cb12-17" title="17"><span class="co">#&gt;    &lt;int&gt; &lt;int&gt;     &lt;int&gt; &lt;int&gt; &lt;dbl&gt;</span></a>
+<a class="sourceLine" id="cb12-18" title="18"><span class="co">#&gt;  1     1     1         1     1   15 </span></a>
+<a class="sourceLine" id="cb12-19" title="19"><span class="co">#&gt;  2     1     1         1     2   10.</span></a>
+<a class="sourceLine" id="cb12-20" title="20"><span class="co">#&gt;  3     1     1         2     1   18 </span></a>
+<a class="sourceLine" id="cb12-21" title="21"><span class="co">#&gt;  4     1     1         2     2   12 </span></a>
+<a class="sourceLine" id="cb12-22" title="22"><span class="co">#&gt;  5     1     1         3     1   27.</span></a>
+<a class="sourceLine" id="cb12-23" title="23"><span class="co">#&gt;  6     1     1         3     2   18.</span></a>
+<a class="sourceLine" id="cb12-24" title="24"><span class="co">#&gt;  7     1     2         1     1   30 </span></a>
+<a class="sourceLine" id="cb12-25" title="25"><span class="co">#&gt;  8     1     2         1     2   20.</span></a>
+<a class="sourceLine" id="cb12-26" title="26"><span class="co">#&gt;  9     1     2         2     1   36 </span></a>
+<a class="sourceLine" id="cb12-27" title="27"><span class="co">#&gt; 10     1     2         2     2   24 </span></a>
+<a class="sourceLine" id="cb12-28" title="28"><span class="co">#&gt; # ... with 38 more rows</span></a></code></pre></div>
+</div>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-Gelman1997">
+<p>Gelman, Andrew, and Thomas C Little. 1997. “Poststratification into Many Categories using Hierachical Logistic Regression.” <em>Survey Methodology</em> 23 (2): 127–35. <a href="https://doi.org/10.1016/j.ins.2011.12.036">https://doi.org/10.1016/j.ins.2011.12.036</a>.</p>
+</div>
+<div id="ref-Leemann2016">
+<p>Leemann, Lucas, and Fabio Wasserfallen. 2017. “Extending the Use and Prediction Precision of Subnational Public Opinion Estimation.” <em>American Journal of Political Science</em> 61 (4): 1003–22.</p>
+</div>
+<div id="ref-Ornstein2019">
+<p>Ornstein, Joseph T. 2019. “Stacked Regression and Poststratification.” <em>Working Paper</em>.</p>
+</div>
+<div id="ref-Park2004">
+<p>Park, David K., Andrew Gelman, and Joseph Bafumi. 2004. “Bayesian multilevel estimation with poststratification: State-level estimates from national polls.” <em>Political Analysis</em> 12 (4): 375–85. <a href="https://doi.org/10.1093/pan/mph024">https://doi.org/10.1093/pan/mph024</a>.</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
