@@ -12,11 +12,14 @@ RoxygenNote: 6.1.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
-Imports: tidyverse,
+Imports: 
+    tidyverse,
     magrittr,
     glmnet,
     ranger,
     kknn,
     xgboost,
     caret,
-    lme4
+    lme4,
+    vtreat,
+    quadprog

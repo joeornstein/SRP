@@ -10,7 +10,7 @@ vignette: >
 bibliography: refs.bib
 ---
 
-```{r setup, include = FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -30,7 +30,7 @@ Suppose we want to know how some public opinion varies by subnational unit. But 
 The `SRP` package is currently available on GitHub. You can install it using the `devtools` package.
 
 ```{r installation, message = FALSE}
-devtools::install_github('joeornstein/SRP')
+#devtools::install_github('joeornstein/SRP')
 library(SRP)
 ```
 
@@ -166,7 +166,7 @@ gbmModel <- xgboost(data = dtrain,
 
 Next, we will use the `getStackWeights()` function to estimate the optimal ensemble model average weights using 5-fold cross-validation.
 
-```{r stacking, message=FALSE}
+```{r stacking, message=FALSE, warning=FALSE}
 stackWeights <- getStackWeights(trainset = trainset,
                                 hlmFormula = hlmFormula,
                                 lasso_vars = lasso_vars,
