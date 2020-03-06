@@ -26,29 +26,37 @@ poststratify <- function(pred, PSFrame){
 #' @return A synthetic poststratification frame computed from the marginal frequencies in PSFrame1 and PSFrame2
 getSyntheticPSFrame <- function(PSFrame1, PSFrame2){
 
-  #Get Total Populations of Geographic Units
+  # Get Total Populations of Geographic Units
   pop <- PSFrame1 %>%
     group_by(unit) %>%
     summarise(unitPop = sum(freq))
 
-  #Convert frequencies to probabilities
-  PSFrame1 %<>%
+  # Convert frequencies to probabilities
+  PSFrame1 <- PSFrame1 %>%
     left_join(pop, by = 'unit') %>%
     mutate(prob1 = freq/unitPop) %>%
     select(-freq,-unitPop)
 
-  PSFrame2 %<>%
+  PSFrame2 <- PSFrame2 %>%
     left_join(pop, by = 'unit') %>%
     mutate(prob2 = freq/unitPop) %>%
     select(-freq,-unitPop)
 
+  # If there are shared variables, marginalize them out in PSFrame2
+  shared_vars <- intersect(names(PSFrame1), names(PSFrame2))
+  unique_vars <- names(PSFrame2)[!(names(PSFrame2) %in% c(shared_vars, 'prob2'))]
+  PSFrame2 <- PSFrame2 %>%
+    group_by_at(vars(unit,unique_vars)) %>%
+    summarise(prob2 = sum(prob2)) %>%
+    ungroup
 
-  #Merge the two and multiply the marginal probabilities
+  # Merge the two and multiply the marginal probabilities
   PSFrame <- left_join(PSFrame1, PSFrame2, by = 'unit') %>%
     mutate(prob = prob1 * prob2)
 
-  #Multiply by unit-level populations to get synthetic frequencies
-  PSFrame %<>% left_join(pop, by = 'unit') %>%
+  # Multiply by unit-level populations to get synthetic frequencies
+  PSFrame <- PSFrame %>%
+    left_join(pop, by = 'unit') %>%
     mutate(freq = prob * unitPop) %>%
     select(-prob1, -prob2, -prob, -unitPop)
 

@@ -1,7 +1,7 @@
 Package: SRP
 Type: Package
 Title: Stacked Regression and Poststratification
-Version: 0.1.0
+Version: 0.1.1
 Author: Joseph T. Ornstein
 Maintainer: Joseph T. Ornstein <jornstein@gmail.com>
 Description: Useful functions for estimating Multilevel Regression and Poststratification (MRP) and Stacked Regression and Poststratification (SRP).
