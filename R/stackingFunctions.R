@@ -120,7 +120,7 @@ getStackWeights <- function(trainset, binaryDepVar = F,
     }
 
     #3c. Store in train_meta
-    train_meta %<>% bind_rows(testfold)
+    train_meta <- train_meta %>% bind_rows(testfold)
   }
 
   #4. Use quadratic programming algorithm (continuous depvar) or hill climbing (binary depvar)
@@ -255,11 +255,11 @@ cleanDataLASSO <- function(trainset, lasso_vars, lasso_factors = NULL, testset =
   }
 
 
-  trainset %<>%
+  trainset <- trainset %>%
     vtreat::prepare(treatplan_lasso, ., varRestriction = new_vars_lasso) %>%
     as.matrix
 
-  testset %<>%
+  testset <- testset %>%
     vtreat::prepare(treatplan_lasso, ., varRestriction = new_vars_lasso) %>%
     as.matrix
 
