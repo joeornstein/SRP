@@ -71,7 +71,13 @@ getStackWeights <- function(trainset, binaryDepVar = F,
     #3a. Fit base models to training fold
 
     #HLM
-    hlmFold <- lmer(hlmFormula, data = trainfold)
+    if(binaryDepVar){
+      hlmFold <- glmer(hlmFormula,
+                       family = binomial(link = "logit"),
+                       data = trainfold)
+    }else{
+      hlmFold <- lmer(hlmFormula, data = trainfold)
+    }
 
     #LASSO
     if(binaryDepVar){
