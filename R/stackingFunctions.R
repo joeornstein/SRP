@@ -249,8 +249,7 @@ cleanDataLASSO <- function(trainset, lasso_vars, lasso_factors = NULL, testset =
 
   #Option to provide new variable names as input; otherwise generate them from treatplan_lasso
   if(is.null(new_vars_lasso)){
-    new_vars_lasso <- treatplan_lasso %>%
-      pluck(scoreFrame) %>%
+    new_vars_lasso <- treatplan_lasso$scoreFrame %>%
       filter(code %in% c("clean", "lev")) %>%
       pull(varName)
   }
@@ -298,8 +297,7 @@ cleanDataGBM <- function(trainset, gbm_vars, gbm_factors = NULL, testset = NULL,
 
   #Option to provide new variable names as input; otherwise generate them from treatplan_gbm
   if(is.null(new_vars_gbm)){
-    new_vars_gbm <- treatplan_gbm %>%
-      pluck(scoreFrame) %>%
+    new_vars_gbm <- treatplan_gbm$scoreFrame %>%
       filter(code %in% c("clean", "lev")) %>%
       pull(varName)
   }
