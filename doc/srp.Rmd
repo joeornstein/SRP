@@ -15,8 +15,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(tidyverse)
-library(magrittr)
 ```
 
 SRP is an `R` package that contains useful functions for implementing multilevel regression and poststratification (MRP) and stacked regression and poststratification (SRP).
@@ -27,11 +25,12 @@ Suppose we want to know how some public opinion varies by subnational unit. But 
 
 ## Installation
 
-The `SRP` package is currently available on GitHub. You can install it using the `devtools` package.
+The `SRP` package is currently available on GitHub. You can install it using the `devtools` package. For this vignette, you'll also want to load the `tidyverse` package.
 
 ```{r installation, message = FALSE}
 #devtools::install_github('joeornstein/SRP')
 library(SRP)
+library(tidyverse)
 ```
 
 ## The Data

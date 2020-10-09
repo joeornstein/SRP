@@ -1,7 +1,7 @@
 #Functions to estimate stacked regression models
 
-#Version 1.0
-#Last Updated by Joe Ornstein (April 23, 2019)
+#Version 1.1
+#Last Updated by Joe Ornstein (October 9, 2020)
 
 
 #' Generate Stack Weights
@@ -250,9 +250,9 @@ cleanDataLASSO <- function(trainset, lasso_vars, lasso_factors = NULL, testset =
   #Option to provide new variable names as input; otherwise generate them from treatplan_lasso
   if(is.null(new_vars_lasso)){
     new_vars_lasso <- treatplan_lasso %>%
-      use_series(scoreFrame) %>%
+      pluck(scoreFrame) %>%
       filter(code %in% c("clean", "lev")) %>%
-      use_series(varName)
+      pull(varName)
   }
 
 
@@ -299,9 +299,9 @@ cleanDataGBM <- function(trainset, gbm_vars, gbm_factors = NULL, testset = NULL,
   #Option to provide new variable names as input; otherwise generate them from treatplan_gbm
   if(is.null(new_vars_gbm)){
     new_vars_gbm <- treatplan_gbm %>%
-      use_series(scoreFrame) %>%
+      pluck(scoreFrame) %>%
       filter(code %in% c("clean", "lev")) %>%
-      use_series(varName)
+      pull(varName)
   }
 
   #Prepare the training trainseta
