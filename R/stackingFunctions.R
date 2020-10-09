@@ -87,7 +87,7 @@ getStackWeights <- function(trainset, binaryDepVar = F,
 
     #GBM
     dtrain <-xgb.DMatrix(trainfold_gbm, label = trainfold$y) #Create a custom 'xgb.DMatrix'. Faster computation
-    objective <- 'reg:linear'
+    objective <- 'reg:squarederror'
     eval_metric <- 'rmse'
     if(binaryDepVar){
       objective <- 'binary:logistic'
